@@ -43,6 +43,8 @@ fi
 #Modificación del fichero SSH
 echo -e "Añadiendo el usuario al fichero de configuración SSH para que se pueda conectar mediante este protocolo...\n"
 echo "AllowUsers $username"| sudo tee -a /etc/ssh/ssh_config > /dev/null
+
+systemctl restart sshd
 #Eliminación de privilegios al usuario
 discovery_privileges=$(find / -type f -perm /u=w -user ${username} 2> /dev/null)
 echo -e "Archivos con permiso de escritura para ${username}: \n $discovery_privileges \n \nEliminando...\n"
