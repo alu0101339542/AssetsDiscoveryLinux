@@ -38,11 +38,6 @@ else
 	fi
 fi
 
-#Modificación del fichero SSH
-echo -e "\n\n [*]Añadiendo el usuario $username al fichero de configuración SSH para que se pueda conectar mediante este protocolo...\n"
-sudo sed -i "s/AllowUsers.*/& $username/" /etc/ssh/sshd_config
-
-systemctl restart sshd
 #Eliminación de privilegios al usuario
 discovery_privileges=$(find / -type f -perm /u=w -user ${username} 2> /dev/null)
 echo -e "[*]Archivos con permiso de escritura para ${username}: \n $discovery_privileges \n \nEliminando...\n"
@@ -53,3 +48,8 @@ done <<< "$discovery_privileges"
 
 echo -e "Se han eliminado los permisos de escritura para ${username}."
 
+#Modificación del fichero SSH
+echo -e "\n\n [*]Añadiendo el usuario $username al fichero de configuración SSH para que se pueda conectar mediante este protocolo...\n"
+sudo sed -i "s/AllowUsers.*/& $username/" /etc/ssh/sshd_config
+
+systemctl restart sshd
