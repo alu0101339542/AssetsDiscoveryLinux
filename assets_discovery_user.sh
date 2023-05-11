@@ -1,8 +1,5 @@
 #!/bin/bash
 #Declaración de variables
-username=discovery
-ROJO='\033[0;31m'
-NEGRO='\033[0m'
 
 #El usuario tiene privilegios de root
 if [[ $EUID -ne 0 ]]; then 
@@ -11,12 +8,13 @@ if [[ $EUID -ne 0 ]]; then
 fi
 
 #Creación del usuario
+read -p "Introduzca el nombre del usuario que se usará para el descubrimiento (si no existe se creará uno nuevo con ese nombre):" username
 # Comprobación si el usuario ya existe
 set -e
-if id "discovery" >/dev/null 2>&1; then
-	echo -e "Procediendo a quitarle permisos de escritura al usuario ${username}. \n"
+if id "$username" >/dev/null 2>&1; then
+	echo -e "\n El usuario indicado ya existe. Procediendo a quitarle permisos de escritura al usuario ${username}. \n"
 else
-	echo -e "Creando el usuario ${username}... \n"
+	echo -e "\n Creando el usuario ${username}... \n"
 	read -s -p $'Introduzca una contraseña para el usuario \033[0;31mMIN 8 CARACTERES\033[0m:' password1
 	
 	echo
@@ -41,13 +39,13 @@ else
 fi
 
 #Modificación del fichero SSH
-echo -e "Añadiendo el usuario al fichero de configuración SSH para que se pueda conectar mediante este protocolo...\n"
-echo "AllowUsers $username"| sudo tee -a /etc/ssh/ssh_config > /dev/null
+echo -e "\n\n [*]Añadiendo el usuario $username al fichero de configuración SSH para que se pueda conectar mediante este protocolo...\n"
+sudo sed -i "s/AllowUsers.*/& $username/" /etc/ssh/sshd_config
 
 systemctl restart sshd
 #Eliminación de privilegios al usuario
 discovery_privileges=$(find / -type f -perm /u=w -user ${username} 2> /dev/null)
-echo -e "Archivos con permiso de escritura para ${username}: \n $discovery_privileges \n \nEliminando...\n"
+echo -e "[*]Archivos con permiso de escritura para ${username}: \n $discovery_privileges \n \nEliminando...\n"
 
 while IFS= read -r file; do
     sudo chmod -w "$file"
