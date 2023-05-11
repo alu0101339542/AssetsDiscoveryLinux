@@ -10,7 +10,7 @@ fi
 #Creación del usuario
 read -p "Introduzca el nombre del usuario que se usará para el descubrimiento (si no existe se creará uno nuevo con ese nombre):" username
 # Comprobación si el usuario ya existe
-set -e
+#set -e
 if id "$username" >/dev/null 2>&1; then
 	echo -e "\n El usuario indicado ya existe. Procediendo a quitarle permisos de escritura al usuario ${username}. \n"
 else
@@ -37,16 +37,21 @@ else
     		exit 1
 	fi
 fi
-
-#Eliminación de privilegios al usuario
+#Quitando los permisos de escritura
 discovery_privileges=$(find / -type f -perm /u=w -user ${username} 2> /dev/null)
-echo -e "[*]Archivos con permiso de escritura para ${username}: \n $discovery_privileges \n \nEliminando...\n"
 
-while IFS= read -r file; do
-    sudo chmod -w "$file"
-done <<< "$discovery_privileges"
+if [ -n "$discovery_privileges" ]; then
+    echo -e "[*]Archivos con permiso de escritura para ${username}: \n $discovery_privileges \n \nEliminando...\n"
 
-echo -e "Se han eliminado los permisos de escritura para ${username}."
+    while IFS= read -r file; do
+        sudo chmod -w "$file"
+    done <<< "$discovery_privileges"
+
+    echo -e "Se han eliminado los permisos de escritura para ${username}."
+else
+    echo "No se encontraron archivos con permiso de escritura para ${username}."
+fi
+
 
 #Modificación del fichero SSH
 echo -e "\n\n [*]Añadiendo el usuario $username al fichero de configuración SSH para que se pueda conectar mediante este protocolo...\n"
